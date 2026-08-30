@@ -3,81 +3,343 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Darkwick Export Simulator</title>
-    <link rel="stylesheet" href="style.css">
+    <title>AgriExport Tycoon</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            padding-bottom: 70px;
+        }
+
+        .screen { display: none; padding: 20px; max-width: 500px; margin: auto; }
+        .screen.active { display: block; }
+
+        .card {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 15px;
+        }
+
+        input, button {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        button {
+            background-color: #2ec4b6;
+            color: white;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        button:hover { background-color: #28af9f; }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* Bottom Navbar */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 500px;
+            height: 60px;
+            background-color: #011627;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            border-top-left-radius: 15px;
+            border-top-right-radius: 15px;
+        }
+
+        .bottom-nav button {
+            background: none;
+            border: none;
+            color: #ff9f1c;
+            font-size: 13px;
+            padding: 5px;
+            margin: 0;
+        }
+
+        .badge-green { color: #2ec4b6; font-weight: bold; }
+        .badge-yellow { color: #ffbf00; font-weight: bold; }
+        .badge-red { color: #e71d36; font-weight: bold; }
+    </style>
 </head>
 <body>
 
-<div class="container">
-    <!-- 1. หน้าเข้าสู่ระบบ / ลงทะเบียน -->
-    <div id="auth-screen" class="card">
-        <h2>Darkwick Export System</h2>
-        <input type="text" id="auth-username" placeholder="ชื่อผู้ใช้ (Username)">
-        <input type="password" id="auth-password" placeholder="รหัสผ่าน (Password)">
-        <button class="btn-green" onclick="handleLogin()">เข้าสู่ระบบ</button>
-        <button class="btn-blue" onclick="handleRegister()">ลงทะเบียนใหม่</button>
+    <div id="auth-screen" class="screen active">
+        <div class="card">
+            <h2>เข้าสู่ระบบ / ลงทะเบียน</h2>
+            <input type="text" id="username" placeholder="Username (ชื่อเข้าใช้ระบบ)">
+            <input type="password" id="password" placeholder="Password (รหัสผ่าน)">
+            <button onclick="handleAuth()">เข้าสู่ระบบ</button>
+        </div>
     </div>
 
-    <!-- 2. หน้าเกมหลัก -->
-    <div id="game-screen" class="hidden">
+    <div id="main-screen" class="screen">
         
-        <!-- Tab: ออเดอร์ -->
-        <div id="tab-orders" class="card tab-content">
-            <h3>📦 รายการคำสั่งซื้อ</h3>
-            <div class="order-section">
-                <p><strong>🏨 โรงแรมหรู (Luxury Hotel)</strong></p>
-                <p>ต้องการ: พืชผล <span class="badge badge-green">เกรดสีเขียว</span> (สดใหม่สูง)</p>
-                <p>รับซื้อราคาสูง | ปริมาณมหาศาล</p>
+        <div id="tab-orders" class="tab-content active">
+            <div class="card">
+                <h3>รายการสั่งซื้อสินค้า</h3>
+                <hr>
+                <div id="orders-container">
+                    <div style="border-bottom: 1px solid #eee; padding: 10px 0;">
+                        <b>[โรงแรม] สั่งซื้อ แอปเปิ้ล (มหาศาล)</b><br>
+                        ต้องการ: <span class="badge-green">เกรดเขียว (สดใหม่)</span> | อุณหภูมิ: 4°C<br>
+                        รางวัล: $150,000<br>
+                        <button onclick="acceptOrder('ส่งโรงแรม (แอปเปิ้ล)', 4, 150000)">รับออร์เดอร์ส่งโรงแรม</button>
+                    </div>
+
+                    <div style="padding: 10px 0;">
+                        <b>[ตลาด] สั่งซื้อ กล้วยหอม (มหาศาล)</b><br>
+                        ต้องการ: <span class="badge-yellow">เกรดเหลือง (ถูกลงมา)</span> | อุณหภูมิ: 15°C<br>
+                        รางวัล: $80,000<br>
+                        <button onclick="acceptOrder('ส่งตลาด (กล้วยหอม)', 15, 80000)">รับออร์เดอร์ส่งตลาด</button>
+                    </div>
+                </div>
             </div>
-            <div class="order-section">
-                <p><strong>🏪 ตลาดทั่วไป (Mass Market)</strong></p>
-                <p>ต้องการ: พืชผล <span class="badge badge-yellow">เกรดสีเหลือง</span> (ราคาประหยัด)</p>
-                <p>รับซื้อราคาปานกลาง | ปริมาณปานกลาง</p>
+        </div>
+
+        <div id="tab-shipping" class="tab-content">
+            <div class="card">
+                <h3>ไลน์การส่งออกสินค้า</h3>
+                <p>ออร์เดอร์ปัจจุบัน: <b id="ship-order-name">ยังไม่ได้เลือกออร์เดอร์</b></p>
+                <p>อุณหภูมิเป้าหมาย: <b id="ship-target-temp">-</b>°C</p>
+                <p>สถานะเกรด: <span id="ship-current-grade" class="badge-green">เกรดสีเขียว</span></p>
+                
+                <label>ปรับอุณหภูมิตู้คอนเทนเนอร์:</label>
+                <input type="range" id="temp-slider" min="-10" max="40" value="0" oninput="updateTemp(this.value)">
+                <p>อุณหภูมิปัจจุบัน: <b id="temp-val">0</b>°C</p>
+
+                <button id="btn-finish" onclick="finishShipping()" disabled>ส่งมอบสินค้า</button>
             </div>
-            <p class="warning-text">*เตือน: สินค้า <span class="badge badge-red">เกรดสีแดง</span> คือสินค้าเน่าเสีย ไม่มีใครรับซื้อ</p>
         </div>
 
-        <!-- Tab: ตารางอันดับ -->
-        <div id="tab-leaderboard" class="card tab-content hidden">
-            <h3>📊 ตารางอันดับรายได้ (% Growth)</h3>
-            <p>1. Darkwick_King — +150%</p>
-            <p>2. Player_10000002 — +85%</p>
+        <div id="tab-leaderboard" class="tab-content">
+            <div class="card">
+                <h3>ตารางอันดับเงินรวม</h3>
+                <ol id="leaderboard-list"></ol>
+            </div>
         </div>
 
-        <!-- Tab: สายการส่งออก -->
-        <div id="tab-logistics" class="card tab-content hidden">
-            <h3>🚛 สายการส่งออกสินค้า</h3>
-            <label>ตั้งค่าอุณหภูมิตู้คอนเทนเนอร์ (°C):</label>
-            <input type="number" id="temp-control" value="4">
-            <button class="btn-green" onclick="startExport()">เริ่มการขนส่ง</button>
+        <div id="tab-profile" class="tab-content">
+            <div class="card">
+                <h3>โปรไฟล์ผู้เล่น</h3>
+                <p>User ID: <b id="prof-id">-</b></p>
+                <p>Display Name: <b id="prof-display-name">-</b></p>
+                <p>Total Money: $<b id="prof-total-money">0</b></p>
+                <p>Last Login Time: <small id="prof-login-time">-</small></p>
+                
+                <hr>
+                <label>เปลี่ยน Display Name:</label>
+                <input type="text" id="edit-display-name">
+                <button onclick="updateProfileName()">บันทึกชื่อใหม่</button>
+            </div>
         </div>
 
-        <!-- Tab: โปรไฟล์ -->
-        <div id="tab-profile" class="card tab-content hidden">
-            <h3>👤 โปรไฟล์ผู้เล่น</h3>
-            <p class="prof-info"><strong>User ID:</strong> <span id="prof-id" class="highlight">-</span></p>
-            <p class="prof-info"><strong>Display Name:</strong> <span id="prof-name">-</span></p>
-            <p class="prof-info sub-text"><strong>ล็อกอินล่าสุด:</strong> <span id="prof-last-login">-</span></p>
-            
-            <hr class="divider">
-            
-            <input type="text" id="new-display-name" placeholder="ใส่ชื่อใหม่ที่ต้องการเปลี่ยน">
-            <button class="btn-blue" onclick="updateProfile()">เปลี่ยนชื่อโปรไฟล์</button>
-            <button class="btn-red logout-btn" onclick="logout()">ออกจากระบบ</button>
-        </div>
-
+        <nav class="bottom-nav">
+            <button onclick="switchTab('orders')">📦 ออร์เดอร์</button>
+            <button onclick="switchTab('shipping')">🚛 การส่งออก</button>
+            <button onclick="switchTab('leaderboard')">🏆 ตารางอันดับ</button>
+            <button onclick="switchTab('profile')">👤 โปรไฟล์</button>
+        </nav>
     </div>
-</div>
 
-<!-- Bottom Navigation Bar -->
-<div id="nav-bar" class="navbar hidden">
-    <button id="nav-orders" class="active" onclick="switchTab('orders')">📦<br>ออเดอร์</button>
-    <button id="nav-leaderboard" onclick="switchTab('leaderboard')">📊<br>อันดับ</button>
-    <button id="nav-logistics" onclick="switchTab('logistics')">🚛<br>ส่งออก</button>
-    <button id="nav-profile" onclick="switchTab('profile')">👤<br>โปรไฟล์</button>
-</div>
+    <script>
+        // นำ URL จาก SheetDB มาใส่ที่นี่
+        const SHEETDB_URL = "https://sheetdb.io/api/v1/my2ssyufztwjb"; 
+        
+        let currentUser = null;
+        let currentOrder = null;
 
-<script src="app.js"></script>
+        // 1. ระบบ ล็อกอิน / จัดเก็บข้อมูลลงชีต
+        async function handleAuth() {
+            const usernameInput = document.getElementById('username').value.trim();
+            const passwordInput = document.getElementById('password').value.trim();
+
+            if (!usernameInput || !passwordInput) return alert("กรุณากรอก Username และ Password");
+
+            const res = await fetch(SHEETDB_URL);
+            const users = await res.json();
+
+            const now = new Date().toLocaleString('th-TH');
+            const existingUser = users.find(u => u["Username"] === usernameInput && u["Password"] === passwordInput);
+
+            if (existingUser) {
+                // 1.2 ล็อกอินเก่า - ดึงข้อมูลเดิมมาใช้
+                currentUser = existingUser;
+                currentUser["Last Login Time"] = now;
+                
+                // อัปเดตเวลาล็อกอินล่าสุด
+                await fetch(`${SHEETDB_URL}/User ID/${encodeURIComponent(currentUser["User ID"])}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ data: { "Last Login Time": now } })
+                });
+            } else {
+                // 1.3 ไอดีเกมคนแรกเริ่มที่ 10000001
+                let maxId = 10000000;
+                users.forEach(u => {
+                    const id = parseInt(u["User ID"]);
+                    if (id > maxId) maxId = id;
+                });
+
+                currentUser = {
+                    "User ID": (maxId + 1).toString(),
+                    "Username": usernameInput,
+                    "Password": passwordInput,
+                    "Last Login Time": now,
+                    "Display Name": usernameInput, // ค่าเริ่มต้นใช้ชื่อ Username ก่อน
+                    "Total Money": 0
+                };
+
+                // บันทึกบัญชีใหม่ลง Google Sheet
+                await fetch(SHEETDB_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ data: currentUser })
+                });
+            }
+
+            loadProfileUI();
+            document.getElementById('auth-screen').classList.remove('active');
+            document.getElementById('main-screen').classList.add('active');
+        }
+
+        // 1.4 ระบบเปลี่ยน Display Name ในโปรไฟล์
+        async function updateProfileName() {
+            const newName = document.getElementById('edit-display-name').value.trim();
+            if (!newName) return alert("กรุณากรอก Display Name ใหม่");
+
+            await fetch(`${SHEETDB_URL}/User ID/${encodeURIComponent(currentUser["User ID"])}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ data: { "Display Name": newName } })
+            });
+
+            currentUser["Display Name"] = newName;
+            alert("เปลี่ยน Display Name เรียบร้อยแล้ว!");
+            loadProfileUI();
+        }
+
+        function loadProfileUI() {
+            document.getElementById('prof-id').innerText = currentUser["User ID"];
+            document.getElementById('prof-display-name').innerText = currentUser["Display Name"];
+            document.getElementById('prof-total-money').innerText = parseFloat(currentUser["Total Money"]).toLocaleString();
+            document.getElementById('prof-login-time').innerText = currentUser["Last Login Time"];
+            document.getElementById('edit-display-name').value = currentUser["Display Name"];
+        }
+
+        // 2. ระบบการส่งออก & คุมอุณหภูมิ (เกรด เขียว/เหลือง/แดง)
+        function acceptOrder(orderName, targetTemp, reward) {
+            currentOrder = {
+                name: orderName,
+                targetTemp: targetTemp,
+                baseReward: reward,
+                currentGrade: "Green"
+            };
+
+            document.getElementById('ship-order-name').innerText = orderName;
+            document.getElementById('ship-target-temp').innerText = targetTemp;
+            document.getElementById('btn-finish').disabled = false;
+            
+            updateTemp(document.getElementById('temp-slider').value);
+            switchTab('shipping');
+        }
+
+        function updateTemp(val) {
+            document.getElementById('temp-val').innerText = val;
+            if (!currentOrder) return;
+
+            const diff = Math.abs(val - currentOrder.targetTemp);
+            const gradeElem = document.getElementById('ship-current-grade');
+            
+            if (diff <= 2) {
+                currentOrder.currentGrade = "Green";
+                gradeElem.innerText = "เกรดสีเขียว (สดใหม่ - ได้ราคาเต็ม)";
+                gradeElem.className = "badge-green";
+            } else if (diff <= 6) {
+                currentOrder.currentGrade = "Yellow";
+                gradeElem.innerText = "เกรดสีเหลือง (ถูกลงมา 50%)";
+                gradeElem.className = "badge-yellow";
+            } else {
+                currentOrder.currentGrade = "Red";
+                gradeElem.innerText = "เกรดสีแดง (เสียหาย - ไม่มีใครเอา $0)";
+                gradeElem.className = "badge-red";
+            }
+        }
+
+        async function finishShipping() {
+            if (!currentOrder) return;
+
+            let finalReward = 0;
+            if (currentOrder.currentGrade === "Green") {
+                finalReward = currentOrder.baseReward;
+            } else if (currentOrder.currentGrade === "Yellow") {
+                finalReward = currentOrder.baseReward * 0.5;
+            } else {
+                finalReward = 0;
+            }
+
+            // เพิ่มเงินลง Total Money
+            currentUser["Total Money"] = parseFloat(currentUser["Total Money"]) + finalReward;
+
+            // บันทึก Total Money อัปเดตกลับลงชีต
+            await fetch(`${SHEETDB_URL}/User ID/${encodeURIComponent(currentUser["User ID"])}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ data: { "Total Money": currentUser["Total Money"] } })
+            });
+
+            alert(`ส่งมอบสำเร็จ! ได้รับเงิน: $${finalReward.toLocaleString()}`);
+            
+            currentOrder = null;
+            document.getElementById('ship-order-name').innerText = "ยังไม่ได้เลือกออร์เดอร์";
+            document.getElementById('ship-target-temp').innerText = "-";
+            document.getElementById('btn-finish').disabled = true;
+
+            loadProfileUI();
+            switchTab('orders');
+        }
+
+        // 3.1 ตารางอันดับแข่งขัน Total Money
+        async function loadLeaderboard() {
+            const res = await fetch(SHEETDB_URL);
+            const users = await res.json();
+
+            // เรียงลำดับจากเงินมากไปน้อย
+            users.sort((a, b) => parseFloat(b["Total Money"]) - parseFloat(a["Total Money"]));
+
+            const list = document.getElementById('leaderboard-list');
+            list.innerHTML = '';
+            users.forEach((u) => {
+                const li = document.createElement('li');
+                li.innerText = `${u["Display Name"]} (ID: ${u["User ID"]}) - เงินทั้งหมด: $${parseFloat(u["Total Money"]).toLocaleString()}`;
+                list.appendChild(li);
+            });
+        }
+
+        // 4. สลับแท็บด้วยปุ่มกดด้านล่าง
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.getElementById(`tab-${tabName}`).classList.add('active');
+
+            if (tabName === 'leaderboard') {
+                loadLeaderboard();
+            }
+        }
+    </script>
 </body>
-          </html>
-  
+    </html>
+    
