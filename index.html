@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Darkwick Export Simulator</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="container">
+    <!-- 1. หน้าเข้าสู่ระบบ / ลงทะเบียน -->
+    <div id="auth-screen" class="card">
+        <h2>Darkwick Export System</h2>
+        <input type="text" id="auth-username" placeholder="ชื่อผู้ใช้ (Username)">
+        <input type="password" id="auth-password" placeholder="รหัสผ่าน (Password)">
+        <button class="btn-green" onclick="handleLogin()">เข้าสู่ระบบ</button>
+        <button class="btn-blue" onclick="handleRegister()">ลงทะเบียนใหม่</button>
+    </div>
+
+    <!-- 2. หน้าเกมหลัก -->
+    <div id="game-screen" class="hidden">
+        
+        <!-- Tab: ออเดอร์ -->
+        <div id="tab-orders" class="card tab-content">
+            <h3>📦 รายการคำสั่งซื้อ</h3>
+            <div class="order-section">
+                <p><strong>🏨 โรงแรมหรู (Luxury Hotel)</strong></p>
+                <p>ต้องการ: พืชผล <span class="badge badge-green">เกรดสีเขียว</span> (สดใหม่สูง)</p>
+                <p>รับซื้อราคาสูง | ปริมาณมหาศาล</p>
+            </div>
+            <div class="order-section">
+                <p><strong>🏪 ตลาดทั่วไป (Mass Market)</strong></p>
+                <p>ต้องการ: พืชผล <span class="badge badge-yellow">เกรดสีเหลือง</span> (ราคาประหยัด)</p>
+                <p>รับซื้อราคาปานกลาง | ปริมาณปานกลาง</p>
+            </div>
+            <p class="warning-text">*เตือน: สินค้า <span class="badge badge-red">เกรดสีแดง</span> คือสินค้าเน่าเสีย ไม่มีใครรับซื้อ</p>
+        </div>
+
+        <!-- Tab: ตารางอันดับ -->
+        <div id="tab-leaderboard" class="card tab-content hidden">
+            <h3>📊 ตารางอันดับรายได้ (% Growth)</h3>
+            <p>1. Darkwick_King — +150%</p>
+            <p>2. Player_10000002 — +85%</p>
+        </div>
+
+        <!-- Tab: สายการส่งออก -->
+        <div id="tab-logistics" class="card tab-content hidden">
+            <h3>🚛 สายการส่งออกสินค้า</h3>
+            <label>ตั้งค่าอุณหภูมิตู้คอนเทนเนอร์ (°C):</label>
+            <input type="number" id="temp-control" value="4">
+            <button class="btn-green" onclick="startExport()">เริ่มการขนส่ง</button>
+        </div>
+
+        <!-- Tab: โปรไฟล์ -->
+        <div id="tab-profile" class="card tab-content hidden">
+            <h3>👤 โปรไฟล์ผู้เล่น</h3>
+            <p class="prof-info"><strong>User ID:</strong> <span id="prof-id" class="highlight">-</span></p>
+            <p class="prof-info"><strong>Display Name:</strong> <span id="prof-name">-</span></p>
+            <p class="prof-info sub-text"><strong>ล็อกอินล่าสุด:</strong> <span id="prof-last-login">-</span></p>
+            
+            <hr class="divider">
+            
+            <input type="text" id="new-display-name" placeholder="ใส่ชื่อใหม่ที่ต้องการเปลี่ยน">
+            <button class="btn-blue" onclick="updateProfile()">เปลี่ยนชื่อโปรไฟล์</button>
+            <button class="btn-red logout-btn" onclick="logout()">ออกจากระบบ</button>
+        </div>
+
+    </div>
+</div>
+
+<!-- Bottom Navigation Bar -->
+<div id="nav-bar" class="navbar hidden">
+    <button id="nav-orders" class="active" onclick="switchTab('orders')">📦<br>ออเดอร์</button>
+    <button id="nav-leaderboard" onclick="switchTab('leaderboard')">📊<br>อันดับ</button>
+    <button id="nav-logistics" onclick="switchTab('logistics')">🚛<br>ส่งออก</button>
+    <button id="nav-profile" onclick="switchTab('profile')">👤<br>โปรไฟล์</button>
+</div>
+
+<script src="app.js"></script>
+</body>
+          </html>
+  
